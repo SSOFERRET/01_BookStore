@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-// const conn = require('./../mariadb');
+const { join } = require('./../controllers/UserController');
 
-// router.use(express.json);
+router.use(express.json);
 
-router.use(()=>{console.log("userRoute")})
+router.post('/join', join);
 
 module.exports = router;
