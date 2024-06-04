@@ -1,5 +1,6 @@
 const conn = require('./../mariadb');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const {StatusCodes} = require('http-status-codes');
 
 const join = (req, res) => {
@@ -22,7 +23,37 @@ const join = (req, res) => {
     )
 };
 
-const login = (req, res) => {};
+const login = (req, res) => {
+    const {email, password} = req.body;
+
+    let sql = `SELECT * FROM users WHERE email = ?`;
+    conn.query(sql, email, 
+        (err, results) => {
+            if (err) {
+                console.log(err);
+                return res.json(err);
+            }
+
+            const loginUser = results[0];
+            const hashPassword = crypto.pbkdf2Sync(password, loginUser.salt, 10000, 10, 'sha512').toString('base64');
+            if (loginUser && hashPassword === loginUser.password) {
+                const token = jwt.sign(
+                    {email: loginUser.email},
+                    'kkkk', 
+                    {
+                        expiresIn: '5m',
+                        issuer: 'owner'
+                    }
+                );
+                res.cookie('token', token, {httpOnly: true});
+                console.log(token);
+                res.status(StatusCodes.OK).json({results});
+            } else {
+                res.status(StatusCodes.UNAUTHORIZED).end();
+            }
+        }
+    )
+};
 
 const requestPasswordReset = (req, res) => {};
 
@@ -30,5 +61,6 @@ const resetPassword = (req, res) => {};
 
 
 module.exports = {
-    join
+    join, 
+    login
 }
