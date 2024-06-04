@@ -20,7 +20,14 @@ const join = (req, res) => {
             res.status(StatusCodes.CREATED).json(results);
         }
     )
-}
+};
+
+const login = (req, res) => {};
+
+const requestPasswordReset = (req, res) => {};
+
+const resetPassword = (req, res) => {};
+
 
 module.exports = {
     join
