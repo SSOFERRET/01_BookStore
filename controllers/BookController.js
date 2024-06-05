@@ -35,27 +35,27 @@ const getBooks = (req, res) => {
             if (err)
                 console.log(err);
             else {
-                // console.log(results);
                 res.status(StatusCodes.OK).json(results)
             }
         }
     )
-
-    // sql = "SELECT FOUND_ROWS()";
-    // let 
-    // const likes = conn.execute(sql, (err, result) => {
-    //     if (err)
-    //         console.log(err)
-    //     else {
-    //         // console.log(result)
-    //     }
-    // })
-    // console.log(likes);
-
 };
 
 const getBookDetail = (req, res) => {
+    const bookId = Number(req.params.id);
 
+    let sql = `SELECT * FROM BookStore.books WHERE id=?`;
+    conn.query(sql, bookId, 
+        (err, results) => {
+            if (err) console.log(err);
+            else {
+                const book = results[0];
+                if (book) 
+                    return res.status(StatusCodes.OK).json(results[0]);
+                return res.status(StatusCodes.NOT_FOUND).end();
+            }
+        }
+    )
 };
 
 module.exports = {
