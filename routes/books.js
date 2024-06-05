@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const conn = require('./../mariadb');
+const {getBooks} = require('./../controllers/BookController')
 
 router.use(express.json());
 
-router.get('/books')
+router.get('', getBooks);
 
 module.exports = router;
