@@ -10,11 +10,14 @@ const getBooks = (req, res) => {
     const offset = (page-1) * limit;
     
     let sql = `SELECT SQL_CALC_FOUND_ROWS *, 
-        (SELECT count(*) FROM BookStore.likes WHERE book_id = BookStore.books.id) AS likes
+        (SELECT count(*) FROM BookStore.likes WHERE book_id = BookStore.books.book_id) AS likes,
+        (SELECT exists
+            (SELECT * FROM BookStore.likes WHERE book_id = BookStore.books.book_id AND user_id=?)
+        ) AS my_like
         FROM BookStore.books
-        LEFT JOIN BookStore.categories ON BookStore.books.category = BookStore.categories.id`;
+        LEFT JOIN BookStore.categories ON BookStore.books.category = BookStore.categories.category_id`;
 
-    let values = [];
+    let values = [userId];
 
     if (categoryId && news) {
         sql += ` WHERE category=? AND pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()`;
@@ -27,7 +30,7 @@ const getBooks = (req, res) => {
     else if (news) 
         sql += ` WHERE pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()`;
 
-    sql += ` LIMIT ? OFFSET ?`;
+    // sql += ` LIMIT ? OFFSET ?`;
     values.push(limit, offset);
 
     conn.query(sql, values, 
@@ -43,9 +46,15 @@ const getBooks = (req, res) => {
 
 const getBookDetail = (req, res) => {
     const bookId = Number(req.params.id);
+    const userId = Number(req.body.user_id);
 
-    let sql = `SELECT * FROM BookStore.books WHERE id=?`;
-    conn.query(sql, bookId, 
+    let sql = `SELECT *,
+        (SELECT exists
+            (SELECT * FROM BookStore.likes WHERE user_id=?)
+        ) AS my_likes
+        FROM BookStore.books WHERE book_id=?`;
+    let values = [userId, bookId];
+    conn.query(sql, values, 
         (err, results) => {
             if (err) console.log(err);
             else {
