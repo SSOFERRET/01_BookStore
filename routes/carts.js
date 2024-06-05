@@ -1,11 +1,11 @@
 const express = require('express');
-// const router = express.Router();
-// const conn = require('./../mariadb');
+const router = express.Router();
+const { addToCart, getCartItems, removeCartItems } = require('./../controllers/CartController');
 
-// router.use(express.json);
+router.use(express.json());
 
-const router = () => {
-    console.log('cartsRoute');
-}
+router.post('', addToCart);
+router.get('', getCartItems);
+router.delete('', removeCartItems);
 
 module.exports = router;
