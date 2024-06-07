@@ -1,11 +1,10 @@
 const express = require('express');
-// const router = express.Router();
-// const conn = require('./../mariadb');
+const { addLike, removeLike } = require('../controllers/LikeController');
+const router = express.Router();
 
-// router.use(express.json);
+router.use(express.json());
 
-const router = () => {
-    console.log('likesRoute');
-}
+router.post('/:id', addLike);
+router.delete('/:id', removeLike);
 
 module.exports = router;
