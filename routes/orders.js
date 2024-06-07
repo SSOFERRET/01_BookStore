@@ -1,11 +1,11 @@
 const express = require('express');
-// const router = express.Router();
-// const conn = require('./../mariadb');
+const router = express.Router();
+const { proceedOrder, getOrders, getOrderDetail } = require('./../controllers/OrderController')
 
-// router.use(express.json);
+router.use(express.json());
 
-const router = () => {
-    console.log('ordersRoute');
-}
+router.post('', proceedOrder);
+router.get('', getOrders);
+router.get('/:id', getOrderDetail);
 
 module.exports = router;
