@@ -1,3 +1,5 @@
+const { TokenExpiredError, JsonWebTokenError } = require('jsonwebtoken');
+const ensureAuthorization = require('../auth');
 const conn = require('./../mariadb');
 const { StatusCodes } = require('http-status-codes');
 
@@ -20,13 +22,21 @@ const addToCart = (req, res) => {
 };
 
 const getCartItems = (req, res) => {
-    const userId = Number(req.body.user_id);
-    
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+
+    const userId = Number(req.body.userId);
+
     let sql = 'SELECT * FROM BookStore.cart_items WHERE user_id=?';
     conn.query(sql, userId, 
         (err, results) => {
             if (err) {
-                return console.log(err);
+                console.log(err);
+                return res.status(StatusCodes.BAD_REQUEST).end();
             }
             return res.status(StatusCodes.OK).json({results});
         }
@@ -34,6 +44,13 @@ const getCartItems = (req, res) => {
 }
 
 const removeCartItems = (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+
     const cartItemId = Number(req.body.cart_item_id);
     const userId = Number(req.body.user_id);
 

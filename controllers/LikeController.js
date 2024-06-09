@@ -1,7 +1,15 @@
 const { StatusCodes } = require('http-status-codes');
 const conn = require('./../mariadb');
+const ensureAuthorization = require('../auth');
 
 const addLike = (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    
     const bookId = Number(req.params.id);
     const userId = Number(req.body.userId);
 
@@ -17,6 +25,13 @@ const addLike = (req, res) => {
 }
 
 const removeLike = (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    
     const bookId = Number(req.params.id);
     const userId = Number(req.body.userId);
 

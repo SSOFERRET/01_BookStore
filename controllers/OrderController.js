@@ -1,8 +1,15 @@
 const { StatusCodes } = require('http-status-codes');
 const mariadb = require('mysql2/promise');
-const conn2 = require('./../mariadb');
+const ensureAuthorization = require('../auth');
 
 const proceedOrder = async (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+
     const conn = await mariadb.createConnection({
         host: '127.0.0.1',
         user: 'root',
@@ -46,12 +53,26 @@ const proceedOrder = async (req, res) => {
 }
 
 const deleteCartItems = async (conn, items) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+
     const sql = 'DELETE FROM BookStore.cart_items WHERE cart_item_id IN (?)';
     const result = await conn.query(sql, [items]);
     return result;
 }
 
 const getOrders = async (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+
     const conn = await mariadb.createConnection({
         host: '127.0.0.1',
         user: 'root',
@@ -65,6 +86,13 @@ const getOrders = async (req, res) => {
 }
 
 const getOrderDetail = async (req, res) => {
+    const authorization = ensureAuthorization(req);
+
+    if (authorization instanceof TokenExpiredError) 
+        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    else if  (authorization instanceof JsonWebTokenError)
+        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    
     const id = Number(req.params.id);
     const conn = await mariadb.createConnection({
         host: '127.0.0.1',
