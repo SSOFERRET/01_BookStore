@@ -12,11 +12,11 @@ const likeRouter = require('./routes/likes');
 const orderRouter = require('./routes/orders');
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3000' || '*',
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204,
-    credential: true
+    credentials: true,
 };
 
 app.use(cors(corsOptions));
