@@ -9,7 +9,7 @@ const join = (req, res) => {
     const salt = crypto.randomBytes(10).toString('base64');
     const hashPassword = crypto.pbkdf2Sync(password, salt, 10000, 10, 'sha512').toString('base64');
 
-    let sql = `INSERT INTO users (email, password, salt) VALUES (?, ?, ?)`;
+    let sql = `INSERT INTO BookStore.users (email, password, salt) VALUES (?, ?, ?)`;
     let values = [email, hashPassword, salt];
 
     conn.query(sql, values, 
@@ -25,7 +25,6 @@ const join = (req, res) => {
 
 const login = (req, res) => {
     const {email, password} = req.body;
-
     let sql = `SELECT * FROM users WHERE email = ?`;
     conn.query(sql, email, 
         (err, results) => {
@@ -38,19 +37,19 @@ const login = (req, res) => {
             const hashPassword = crypto.pbkdf2Sync(password, loginUser.salt, 10000, 10, 'sha512').toString('base64');
             if (loginUser && hashPassword === loginUser.password) {
                 const token = jwt.sign(
-                    {email: loginUser.email},
+                    {email: loginUser.email, 
+                        id: loginUser.user_id
+                    },
                     'kkkk', 
                     {
-                        expiresIn: '5m',
+                        expiresIn: '1h',
                         issuer: 'owner'
                     }
                 );
                 res.cookie('token', token, {httpOnly: true});
-                console.log(token);
-                res.status(StatusCodes.OK).json({results});
-            } else {
-                res.status(StatusCodes.UNAUTHORIZED).end();
-            }
+                return res.status(StatusCodes.OK).json({...results[0], token: token});
+            } else
+                return res.status(StatusCodes.UNAUTHORIZED).end();
         }
     )
 };

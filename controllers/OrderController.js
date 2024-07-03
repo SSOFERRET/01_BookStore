@@ -5,10 +5,10 @@ const ensureAuthorization = require('../auth');
 const proceedOrder = async (req, res) => {
     const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
 
     const conn = await mariadb.createConnection({
         host: '127.0.0.1',
@@ -18,8 +18,9 @@ const proceedOrder = async (req, res) => {
         dataStrings: true
     })
 
-    const { items, delivery, totalQuantity, userId, totalPrice, firstBookTitle } = req.body;
-    
+    const userId = authorization.id;
+    const { items, delivery, totalQuantity, totalPrice, firstBookTitle } = req.body;
+
     let sql = 'INSERT INTO delivery (address, receiver, contact) VALUES (?, ?, ?)';
     let values = [delivery.address, delivery.receiver, delivery.contact];
     let [results] = await conn.query(sql, values);
@@ -53,25 +54,24 @@ const proceedOrder = async (req, res) => {
 }
 
 const deleteCartItems = async (conn, items) => {
-    const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
 
     const sql = 'DELETE FROM BookStore.cart_items WHERE cart_item_id IN (?)';
-    const result = await conn.query(sql, [items]);
+    const result = await conn.query(sql, items);
     return result;
 }
 
 const getOrders = async (req, res) => {
     const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
 
     const conn = await mariadb.createConnection({
         host: '127.0.0.1',
@@ -80,18 +80,19 @@ const getOrders = async (req, res) => {
         database: 'BookStore',
         dataStrings: true
     })
-    let sql = `SELECT order_id, address, receiver, contact, book_title, total_quantity, total_price FROM orders LEFT JOIN delivery ON orders.delivery_id = delivery.delivery_id`;
+    let sql = `SELECT order_id, created_at, address, receiver, contact, book_title, total_quantity, total_price FROM BookStore.orders LEFT JOIN BookStore.delivery ON BookStore.orders.delivery_id = BookStore.delivery.delivery_id`;
     const [rows] = await conn.query(sql);
+    console.log(rows);
     res.status(StatusCodes.OK).json(rows);
 }
 
 const getOrderDetail = async (req, res) => {
     const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
     
     const id = Number(req.params.id);
     const conn = await mariadb.createConnection({
@@ -102,12 +103,13 @@ const getOrderDetail = async (req, res) => {
         dataStrings: true
     });
     const sql = `SELECT ordered_book_id, ordered_books.book_id, title, author, price, quantity
-                FROM ordered_books
-                LEFT JOIN books
+                FROM BookStore.ordered_books
+                LEFT JOIN BookStore.books
                 ON ordered_books.book_id = books.book_id
-                WHERE ordered_book_id = ?
+                WHERE order_id = ?
                 `;
   const [rows, fields] = await conn.query(sql, id);
+  console.log(rows);
 
   res.status(StatusCodes.OK).json(rows);
 }

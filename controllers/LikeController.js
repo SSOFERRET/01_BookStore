@@ -1,19 +1,22 @@
 const { StatusCodes } = require('http-status-codes');
 const conn = require('./../mariadb');
 const ensureAuthorization = require('../auth');
+const { TokenExpiredError } = require('jsonwebtoken');
 
-const addLike = (req, res) => {
+const addLike = async (req, res) => {
     const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
     
     const bookId = Number(req.params.id);
-    const userId = Number(req.body.userId);
+    const userId = authorization.user_id;
 
-    const sql = `INSERT INTO likes (user_id, book_id) VALUES (?, ?)`;
+    console.log(authorization)
+
+    sql = `INSERT INTO likes (user_id, book_id) VALUES (?, ?)`;
     const values = [userId, bookId];
 
     conn.query(sql, values, 
@@ -27,13 +30,13 @@ const addLike = (req, res) => {
 const removeLike = (req, res) => {
     const authorization = ensureAuthorization(req);
 
-    if (authorization instanceof TokenExpiredError) 
-        return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
-    else if  (authorization instanceof JsonWebTokenError)
-        return res.status(StatusCodes.BAD_REQUEST).json(authorization);
+    // if (authorization instanceof TokenExpiredError) 
+    //     return res.status(StatusCodes.UNAUTHORIZED).json(authorization);
+    // else if  (authorization instanceof JsonWebTokenError)
+    //     return res.status(StatusCodes.BAD_REQUEST).json(authorization);
     
     const bookId = Number(req.params.id);
-    const userId = Number(req.body.userId);
+    const userId = authorization.user_id;
 
     const sql = `DELETE FROM likes WHERE user_id=? AND book_id=?`;
     const values = [userId, bookId];

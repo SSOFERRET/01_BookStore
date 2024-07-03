@@ -6,6 +6,6 @@ router.use(express.json());
 
 router.post('', addToCart);
 router.get('', getCartItems);
-router.delete('', removeCartItems);
+router.delete('/:id', removeCartItems);
 
 module.exports = router;

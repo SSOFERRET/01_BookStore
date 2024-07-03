@@ -5,8 +5,8 @@ const { join, login, requestPasswordReset, resetPassword } = require('./../contr
 router.use(express.json());
 
 router.post('/join', join);
-router.get('/login', login);
-router.get('/reset', requestPasswordReset);
+router.post('/login', login);
+router.post('/reset', requestPasswordReset);
 router.put('/reset', resetPassword);
 
 module.exports = router;
